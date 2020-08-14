@@ -1,0 +1,62 @@
+buildscript {
+    def supportRootFolder = project.projectDir.getParentFile()
+    apply from: "unbundled_check.gradle"
+    repositories {
+        maven {
+            url "${supportRootFolder}/../../prebuilts/androidx/external"
+        }
+        if (isUnbundledBuild(supportRootFolder)) {
+            jcenter()
+        }
+    }
+
+    apply from: "build_dependencies.gradle"
+
+    dependencies {
+        classpath build_libs.kotlin.gradle_plugin
+    }
+
+    configurations.classpath.resolutionStrategy {
+        eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion build_versions.kotlin
+            }
+        }
+    }
+}
+
+apply from: "out.gradle"
+init.chooseOutDir()
+
+def runningInBuildServer = System.env.DIST_DIR != null
+if (runningInBuildServer) {
+    System.setProperty("kotlin.compiler.execution.strategy", "in-process")
+}
+
+ext.supportRootFolder = project.projectDir.getParentFile()
+apply from: 'repos.gradle'
+apply from: "build_dependencies.gradle"
+apply plugin: "kotlin"
+apply from: "kotlin-dsl-dependency.gradle.kts"
+
+allprojects {
+    repos.addMavenRepositories(repositories)
+
+    tasks.withType(Test) {
+        testLogging {
+            events = ["failed"]
+            exceptionFormat "full"
+        }
+    }
+}
+
+dependencies {
+    compile build_libs.gradle
+    compile build_libs.error_prone_gradle
+    compile build_libs.dokka_gradle
+    compile build_libs.kotlin.gradle_plugin
+    compile gradleApi()
+    compile project("jetpad-integration")
+    testCompile "junit:junit:4.12"
+}
+

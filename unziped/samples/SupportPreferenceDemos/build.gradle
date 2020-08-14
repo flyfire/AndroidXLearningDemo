@@ -1,0 +1,13 @@
+plugins {
+    id("AndroidXPlugin")
+    id("com.android.application")
+}
+
+dependencies {
+    implementation(project(":appcompat"))
+    implementation(project(":recyclerview"))
+    implementation(project(":preference"))
+    implementation(project(":leanback"))
+    implementation(project(":leanback-preference"))
+    implementation(project(":car"))
+}
